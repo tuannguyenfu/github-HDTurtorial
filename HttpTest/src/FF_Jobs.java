@@ -33,28 +33,27 @@ public class FF_Jobs {
 			Thread.sleep(200);
 		}
 	}
-
-	public static List<String> jsonFF_Jobs() {
+	public static List<String> jsonFF_Jobs() throws SQLException {
 		List<String> ff_Jobs = new ArrayList<String>();
-		int count = 0;
-		try {
-			Connection con = ConnectDB.conHD();
-			Statement st = con.createStatement();
-			String sql = "Select * from FF_Booking";
-			ResultSet rs = st.executeQuery(sql);
-			while (rs.next()) {
-				System.err.println(count);
-				String jobType = JobType(rs.getInt("job_type_id"));
-				String customerCode = getCustomerCode(rs.getString("Booking_Value"));
-				ff_Jobs.add("CustomerCode=" + customerCode + "&" + "Job_ID=" + rs.getString("FF_Booking_Id") + "&" + "JobNo=" + rs.getString("Booking_Value")
-						+ "&" + "JobType=" + jobType + "&" + "MAWB=" + rs.getString("MAWB"));
-				count = count + 1;
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Statement st = DB.createStatement();
+		String sql = "Select * from FF_Booking";
+		ResultSet rs = st.executeQuery(sql);
+		while (rs.next()) {
+			String jobType = JobType(rs.getInt("job_type_id"));
+			String customerCode = getCustomerCode(rs.getInt("ff_booking_id"));
+			String MAWB = getMAWB(rs.getString("MAWB"));
+			ff_Jobs.add("CustomerCode=" + customerCode + "&" + "Job_ID=" + rs.getString("FF_Booking_Id") + "&"
+					+ "JobNo=" + rs.getString("Booking_Value") + "&" + "JobType=" + jobType + "&" + "MAWB="
+					+ rs.getString("MAWB"));
 		}
 		return ff_Jobs;
+	}
+
+	public static String getMAWB(String MAWB) {
+		if (MAWB.equalsIgnoreCase("null")) {
+			return "";
+		} else
+			return MAWB;
 	}
 
 	public static String JobType(int job_Type_ID) {
@@ -74,20 +73,49 @@ public class FF_Jobs {
 			return "";
 	}
 
-	public static String getCustomerCode(String bookingValue) {
+	public static String getCustomerCode(int ff_Booking_ID) throws SQLException {
+		Map<Integer, String> mapCustomers = mapCustomer();
+		Statement st = DB.createStatement();
+		String sql = "select Customer_Code_ID from ff_bookingdetail where ff_booking_id = " + ff_Booking_ID;
 		try {
-			Connection con = ConnectDB.conHD();
-			Statement st = con.createStatement();
-			String sql = "select transfer_place from ff_bookingdetail where booking_value = '" + bookingValue + "'";
 			ResultSet rs = st.executeQuery(sql);
 			while (rs.next()) {
-				return rs.getString("transfer_place");
+				if (!rs.getString("Customer_Code_ID").equalsIgnoreCase("null")) {
+					return mapCustomers.get(rs.getInt("Customer_Code_ID"));
+				}
 			}
-			con.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return "";
+	}
+
+	public static Map<Integer, String> mapCustomer() throws SQLException {
+		List<Integer> customer_Codes = getDistinctCustomerCode();
+		Map<Integer, String> mapCustomer = new HashMap<Integer, String>();
+		for (Integer customer_Code : customer_Codes) {
+			Statement st = DB.createStatement();
+			String sql = "Select * from C_Bpartner where C_Bpartner_ID = " + customer_Code;
+			ResultSet rs = st.executeQuery(sql);
+			while (rs.next()) {
+				mapCustomer.put(rs.getInt("C_Bpartner_ID"), rs.getString("name"));
+			}
+		}
+		return mapCustomer;
+	}
+
+	public static List<Integer> getDistinctCustomerCode() {
+		List<Integer> customer_Codes = new ArrayList<>();
+		try {
+			Statement st = DB.createStatement();
+			String sql = "Select DISTINCT Customer_Code_ID from ff_bookingdetail";
+			ResultSet rs = st.executeQuery(sql);
+			while (rs.next()) {
+				customer_Codes.add(rs.getInt("Customer_Code_ID"));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return customer_Codes;
 	}
 }
