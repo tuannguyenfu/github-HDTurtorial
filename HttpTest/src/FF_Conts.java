@@ -12,10 +12,11 @@ import java.util.List;
 
 public class FF_Conts {
 
+
 	public static void addConts() throws IOException, InterruptedException {
 		List<String> jsonFF_Jobs = jsonFF_Conts();
 		for (String jsonBody : jsonFF_Jobs) {
-			URL obj = new URL("https://jptmobile.bubbleapps.io/version-test/api/1.1/obj/job");
+			URL obj = new URL("https://jptmobile.bubbleapps.io/version-test/api/1.1/obj/Cont");
 			HttpURLConnection postConnection = (HttpURLConnection) obj.openConnection();
 			postConnection.setRequestMethod("POST");
 			postConnection.setDoOutput(true);
@@ -39,18 +40,25 @@ public class FF_Conts {
 		try {
 			Connection con = ConnectDB.conHD();
 			Statement st = con.createStatement();
-			String sql = "Select * from FF_Bookingdetail";
+			String sql = "Select * from FF_Bookingdetail where created > '2020-02-01'";
 			ResultSet rs = st.executeQuery(sql);
 			while (rs.next()) {
-				FF_Cont.add("ContNo=" + rs.getString("Cont_Serial") + "&" + "InvoiceNo=" + rs.getString("Commerical")
-						+ "&" + "Job_ID=" + rs.getString("FF_Booking_ID") + "&" + "JobNo="
-						+ rs.getString("Booking_Value"));
+				String contNo = getContNo(rs.getString("Cont_Serial"));
+				FF_Cont.add("ContNo=" + contNo + "&" + "Job_ID=" + rs.getString("FF_Booking_ID")
+						+ "&" + "JobNo=" + rs.getString("Booking_Value"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return FF_Cont;
+	}
+
+	public static String getContNo(String contNo) {
+		if (contNo == null) {
+			return "";
+		} else
+			return contNo;
 	}
 
 }
