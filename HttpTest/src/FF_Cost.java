@@ -45,12 +45,11 @@ public class FF_Cost {
 			ResultSet rs = st.executeQuery(sql);
 			while (rs.next()) {
 				if (rs.getString("isactive").equalsIgnoreCase("Y")) {
-					ff_Cost.add("CostType_Name=" + rs.getString("value") + "-" + rs.getString("name") + "&CostType_ID="
+					ff_Cost.add("CostType_Name=" + rs.getString("value") + "_" + rs.getString("name") + "&CostType_ID="
 							+ rs.getString("ff_costtype_id"));
 				}
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return ff_Cost;
