@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FF_Tokhais {
+	
 
 	public static void addTokhai() throws IOException, InterruptedException {
 		List<String> jsonFF_Jobs = jsonFF_Tokhai();
@@ -39,12 +40,11 @@ public class FF_Tokhais {
 		try {
 			Connection con = ConnectDB.conHD();
 			Statement st = con.createStatement();
-			String sql = "select * from FF_BookingDetail";
+			String sql = "select * from FF_BookingDetail where created > '2020-02-01'";
 			ResultSet rs = st.executeQuery(sql);
 			while (rs.next()) {
-				FF_Tokhai.add("InvoiceNo=" + rs.getString("Commerical_inv") + "&" + "Job_ID="
-						+ rs.getString("FF_Booking_ID") + "&" + "JobNo=" + rs.getString("Booking_Value") + "&" + "TKNo="
-						+ rs.getString("Dcln_Num"));
+				FF_Tokhai.add("Job_ID=" + rs.getString("FF_Booking_ID") + "&" + "JobNo=" + rs.getString("Booking_Value")
+						+ "&" + "TKNo=" + rs.getString("Dcln_Num"));
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
